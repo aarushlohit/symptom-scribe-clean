@@ -24,7 +24,7 @@ serve(async (req) => {
       req.headers.get("cf-connecting-ip") ||
       "unknown";
 
-    const rateLimitResult = rateLimit(ip);
+    const rateLimitResult = await rateLimit(ip);
 
     if (!rateLimitResult.success) {
       return jsonResponse(
