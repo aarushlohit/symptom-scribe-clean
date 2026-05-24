@@ -781,11 +781,10 @@ const BrainGames = () => {
                   <div
                     key={index}
                     onClick={() => handleCardClick(index)}
-                    className={`aspect-square rounded-xl flex items-center justify-center text-4xl font-bold cursor-pointer transition-all ${
-                      flippedCards.includes(index) || matchedCards.includes(index)
+                    className={`aspect-square rounded-xl flex items-center justify-center text-4xl font-bold cursor-pointer transition-all ${flippedCards.includes(index) || matchedCards.includes(index)
                         ? "bg-gradient-to-br from-primary to-primary-glow text-white rotate-0"
                         : "bg-muted hover:bg-accent rotate-180"
-                    }`}
+                      }`}
                   >
                     {(flippedCards.includes(index) || matchedCards.includes(index)) && (
                       <span>{["🫀", "🧠", "💊", "🏃"][card]}</span>
