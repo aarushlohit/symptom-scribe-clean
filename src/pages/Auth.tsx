@@ -89,6 +89,10 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  useEffect(() => {
+    setShowPassword(false);
+  }, [authTab]);
+
   const validateSignIn = () => {
     try {
       emailSchema.parse(signInEmail);
@@ -430,6 +434,8 @@ const Auth = () => {
                     policy={DEFAULT_PASSWORD_POLICY}
                     showGenerator={true}
                     id="signup-password"
+                    showPasswordState={showPassword}
+                    onShowPasswordChange={setShowPassword}
                   />
 
                   <Button
