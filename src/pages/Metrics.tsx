@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { showSuccess, showError } from "@/lib/toast-helpers";
 import { useMetricsHistory } from "@/hooks/useMetricsHistory";
-import { db, syncOfflineData } from "@/lib/offline-db";
+import { db, syncOfflineData, type OfflineMetric } from "@/lib/offline-db";
 import {
   Table,
   TableBody,
@@ -84,7 +84,7 @@ const metricTypes = [
 interface MetricEntry {
   id: string;
   metric_type: string;
-  value: any;
+  value: { value?: number; systolic?: number; diastolic?: number };
   notes: string | null;
   recorded_at: string;
 }
@@ -159,7 +159,7 @@ const Metrics = () => {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
       setHistoryUserId(user.id);
-      let metricValue: any = {};
+      let metricValue: { value?: number; systolic?: number; diastolic?: number } = {};
       if (metricType === "blood_pressure") {
         metricValue = {
           systolic: parseInt(systolic),
@@ -238,14 +238,15 @@ const Metrics = () => {
       setLoading(false);
     }
   };
-  const formatMetricValue = (record: any) => {
+  const formatMetricValue = (record: OfflineMetric) => {
+    const recordValue = record.value as { value?: number; systolic?: number; diastolic?: number } | null;
     if (record.metric_type === "blood_pressure") {
-      return `${record.value?.systolic}/${record.value?.diastolic} mmHg`;
+      return `${recordValue?.systolic}/${recordValue?.diastolic} mmHg`;
     }
 
     const metric = metricTypes.find((m) => m.value === record.metric_type);
 
-    return `${record.value?.value} ${metric?.unit || ""}`;
+    return `${recordValue?.value} ${metric?.unit || ""}`;
   };
   const formatDate = (date: string) => {
     return new Date(date).toLocaleString([], {
@@ -256,7 +257,7 @@ const Metrics = () => {
       minute: "2-digit",
     });
   };
-  const filteredRecords = records.filter((record: any) => {
+  const filteredRecords = records.filter((record: OfflineMetric) => {
     const metricMatch =
       historyMetricFilter === "all" ||
       record.metric_type === historyMetricFilter;
@@ -490,7 +491,7 @@ const Metrics = () => {
                     </TableHeader>
 
                     <TableBody>
-                      {filteredRecords.map((record: any) => (
+                      {filteredRecords.map((record: OfflineMetric) => (
                         <TableRow key={record.id}>
                           <TableCell>
                             {formatDate(record.recorded_at)}

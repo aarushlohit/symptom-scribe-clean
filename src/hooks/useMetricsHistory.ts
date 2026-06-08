@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { db } from "@/lib/offline-db";
+import { db, type OfflineMetric } from "@/lib/offline-db";
 
 export function useMetricsHistory(userId: string) {
-  const [records, setRecords] = useState<any[]>([]);
+  const [records, setRecords] = useState<OfflineMetric[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchHistory = async () => {
@@ -27,7 +27,7 @@ export function useMetricsHistory(userId: string) {
             .delete();
 
           // Bulk add the new ones
-          const localEntries = data.map((record: any) => ({
+          const localEntries = data.map((record) => ({
             id: record.id,
             user_id: record.user_id,
             metric_type: record.metric_type,

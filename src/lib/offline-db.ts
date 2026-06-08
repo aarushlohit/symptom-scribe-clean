@@ -1,12 +1,13 @@
 import Dexie, { type Table } from "dexie";
 import { supabase } from "@/integrations/supabase/client";
+import { type Json } from "@/integrations/supabase/types";
 
 // Define TypeScript interfaces matching database schemas with sync flags
 export interface OfflineMetric {
   id: string;
   user_id: string;
   metric_type: string;
-  value: any;
+  value: Json;
   notes: string | null;
   recorded_at: string;
   pending_sync: number; // 0 = synced, 1 = pending

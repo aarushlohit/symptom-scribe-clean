@@ -85,7 +85,7 @@ const History = () => {
             .delete();
 
           // Bulk add the new ones
-          const localEntries = data.map((record: any) => ({
+          const localEntries = data.map((record: SymptomEntry) => ({
             id: record.id,
             user_id: record.user_id,
             symptoms: record.symptoms,
@@ -121,7 +121,7 @@ const History = () => {
         localRecords.sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
-        setHistory(localRecords as any);
+        setHistory(localRecords as unknown as SymptomEntry[]);
       }
     } catch (err) {
       console.error("Error loading local symptoms:", err);
