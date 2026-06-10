@@ -5,6 +5,7 @@ import { rateLimit } from "../_shared/rateLimit.ts";
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:8080",
+  "https://symptom-scribe.vercel.app",
 ];
 
 const getCorsHeaders = (origin: string | null) => ({
@@ -18,6 +19,17 @@ const getCorsHeaders = (origin: string | null) => ({
 
 serve(async (req) => {
   const origin = req.headers.get("origin");
+  
+  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+    return new Response(
+      JSON.stringify({ error: "Origin not allowed" }),
+      {
+        status: 403,
+        headers: getCorsHeaders(origin),
+      }
+    );
+  }
+
   if (req.method === "OPTIONS") {
     return new Response(null, {
       headers: getCorsHeaders(origin),

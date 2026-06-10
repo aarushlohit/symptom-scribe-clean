@@ -2,15 +2,39 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { rateLimit } from "../_shared/rateLimit.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "http://localhost:8080",
+  "https://symptom-scribe.vercel.app",
+];
+
+const getCorsHeaders = (origin: string | null) => ({
+  "Access-Control-Allow-Origin":
+    origin && ALLOWED_ORIGINS.includes(origin)
+      ? origin
+      : ALLOWED_ORIGINS[0],
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
-};
+});
 
 serve(async (req) => {
+  const origin = req.headers.get("origin");
+
+  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+    return new Response(
+      JSON.stringify({ error: "Origin not allowed" }),
+      {
+        status: 403,
+        headers: {
+          ...getCorsHeaders(origin),
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
+
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: getCorsHeaders(origin) });
   }
 
   try {
@@ -25,17 +49,24 @@ serve(async (req) => {
         JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
         {
           status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: {
+            ...getCorsHeaders(origin),
+            "Content-Type": "application/json",
+          },
         }
       );
     }
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: "No authorization header" }),
         {
           status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: {
+            ...getCorsHeaders(origin),
+            "Content-Type": "application/json",
+          },
         }
       );
     }
@@ -61,7 +92,10 @@ serve(async (req) => {
         JSON.stringify({ error: "Invalid authorization token" }),
         {
           status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: {
+            ...getCorsHeaders(origin),
+            "Content-Type": "application/json",
+          },
         }
       );
     }
@@ -82,7 +116,10 @@ serve(async (req) => {
         JSON.stringify({ error: "Failed to delete user account" }),
         {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: {
+            ...getCorsHeaders(origin),
+            "Content-Type": "application/json",
+          },
         }
       );
     }
@@ -91,7 +128,10 @@ serve(async (req) => {
       JSON.stringify({ message: "Account successfully deleted" }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...getCorsHeaders(origin),
+          "Content-Type": "application/json",
+        },
       }
     );
   } catch (err) {
@@ -102,7 +142,10 @@ serve(async (req) => {
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...getCorsHeaders(origin),
+          "Content-Type": "application/json",
+        },
       }
     );
   }
