@@ -152,9 +152,59 @@ const Metrics = () => {
     if (metricType === "blood_pressure" && (!systolic || !diastolic)) return;
     if (metricType !== "blood_pressure" && !value) return;
 
+    if (metricType==="heart_rate"){
+      const hr=Number(value);
+      if(hr<30||hr>250){
+        alert("Heart Rate must be between 30 and 250 BPM");
+        return;
+      }
+    }
+    if (metricType==="tempreature"){
+      const temp = Number(value);
+      if (temp < 86 || temp > 113) {
+        alert("Temperature must be between 86°F and 113°F");
+        return;
+      }
+    }
+
+    if (metricType === "weight") {
+      const wt = Number(value);
+      if (wt <= 0 || wt > 500) {
+        alert("Weight must be between 1 and 500 lbs");
+        return;
+      }
+    }
+
+    if (metricType === "blood_sugar") {
+      const sugar = Number(value);
+      if (sugar < 20 || sugar > 1000) {
+        alert("Blood Sugar must be between 20 and 1000 mg/dL");
+        return;
+      }
+    }
+
+    if (metricType === "oxygen_saturation") {
+      const oxygen = Number(value);
+      if (oxygen < 70 || oxygen > 100) {
+        alert("Oxygen Saturation must be between 70% and 100%");
+        return;
+      }
+    }
+
+    if (metricType === "blood_pressure") {
+      const sys = Number(systolic);
+      const dia = Number(diastolic);
+
+      if (sys < 50 || sys > 300 || dia < 30 || dia > 200) {
+        alert("Blood Pressure values are out of valid range");
+        return;
+      }
+    }
+    
     setLoading(true);
     try {
       const {
+
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
