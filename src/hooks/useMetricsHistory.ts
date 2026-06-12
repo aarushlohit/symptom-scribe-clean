@@ -49,9 +49,10 @@ export function useMetricsHistory(userId: string | null) {
         .filter((record) => record.pending_delete === 0)
         .toArray();
 
+      // Create a copy of the array
+      const sortedRecords = [...localRecords];
+
       // Sort based on selected order
-      let sortedRecords = [...localRecords];
-      
       if (sortOrder === 'newest') {
         sortedRecords.sort(
           (a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime()
@@ -61,7 +62,7 @@ export function useMetricsHistory(userId: string | null) {
           (a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
         );
       }
-      
+
       setRecords(sortedRecords);
     } catch (err) {
       console.error("Error loading local metrics:", err);
