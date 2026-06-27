@@ -29,6 +29,35 @@ interface SymptomHistoryRecord {
   created_at: string;
 }
 
+async function fetchSymptomHistory(
+  userId: string
+): Promise<{ data: SymptomHistoryRecord[] | null; source: "cache" | "direct" | "none" }> {
+  const { data: cachedData, error } = await getCachedData<SymptomHistoryRecord[]>("symptom_history");
+
+  if (!error && cachedData && cachedData.length > 0) {
+    return { data: cachedData, source: "cache" };
+  }
+
+  const { data: directData, error: directError } = await supabase
+    .from("symptom_history")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (directError) {
+    if (error) {
+      console.error("Cached symptom_history fetch failed:", error);
+    }
+    throw directError;
+  }
+
+  if (directData && directData.length > 0) {
+    return { data: directData as SymptomHistoryRecord[], source: "direct" };
+  }
+
+  return { data: [], source: "none" };
+}
+
 const RadialWellnessGauge = ({ score }: { score: number }) => {
   const [offset, setOffset] = useState(226.2);
   const radius = 36;
@@ -134,12 +163,7 @@ const Dashboard = () => {
         return;
       }
 
-      const { data: rawSymptoms, error } = await getCachedData<SymptomHistoryRecord[]>("symptom_history");
-
-      if (error) {
-        showError("Error loading dashboard", "Could not fetch your health data");
-        console.error("Error fetching symptoms:", error);
-      }
+      const { data: rawSymptoms, source } = await fetchSymptomHistory(user.id);
 
       if (rawSymptoms && rawSymptoms.length > 0) {
         const key = await whenEncryptionReady();
@@ -170,7 +194,9 @@ const Dashboard = () => {
           recentActivity: 0,
         });
         setRecentHistory([]);
-        showInfo("Welcome!", "Start by consulting with the AI Assistant");
+        if (source === "none") {
+          showInfo("Welcome!", "Start by consulting with the AI Assistant");
+        }
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
